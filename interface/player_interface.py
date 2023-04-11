@@ -8,7 +8,7 @@ class PlayerInterface:
         
     def fill_main_window(self):
         self.main_window.title("Pife")              #titulo da janela
-        self.main_window.geometry("1280x900")       #dimensão da janela
+        self.main_window.geometry("1280x920")       #dimensão da janela
         self.main_window.resizable(False, False)    #Define se é possivel reajustar dimensões da janela
         self.main_window["bg"] = "darkgreen"            #cor da janela
         
@@ -16,8 +16,12 @@ class PlayerInterface:
         # sendo que table_frame ocupa a linha superior e message_frame, a inferior
         self.table_frame = Frame(self.main_window, padx=100, pady=25, bg="darkgreen")
         self.table_frame.grid(row=0,column=0)
-        # self.message_frame = Frame(self.main_window, padx=0, pady=10, bg="darkgreen")
-        # self.message_frame.grid(row=1 , column=0)
+
+        # Frame que contém o botão de descarte
+        self.message_frame = Frame(self.main_window, padx=0, pady=10, bg="darkgreen")
+        self.message_frame.grid(row=1 , column=0)
+        btn = Button(self.message_frame, text="Descartar", command=self.descartar)
+        btn.pack(side='right')
         
         self.an_image = PhotoImage(file="images/yellow_square.png")
         self.bg_image = PhotoImage(file="images/background_square.png")
@@ -55,3 +59,6 @@ class PlayerInterface:
         
     def start_game(self):
         print('start_game')
+    
+    def descartar(self):
+        print("Descartar")
