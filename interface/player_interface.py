@@ -1,9 +1,20 @@
 from tkinter import *
+from tkinter import messagebox
+from tkinter import simpledialog
+from dog.dog_interface import DogPlayerInterface
+from dog.dog_actor import DogActor
+import os
 
-class PlayerInterface:
+class PlayerInterface(DogPlayerInterface):
     def __init__(self):
         self.main_window = Tk()
         self.fill_main_window()
+        
+        player_name = simpledialog.askstring(title='Player Indentification', prompt="Qual o seu nome?")
+        self.dog_server_interface = DogActor()
+        message = self.dog_server_interface.initialize(player_name, self)
+        messagebox.showinfo(message=message)
+        
         self.main_window.mainloop()
         
     def fill_main_window(self):
@@ -23,8 +34,10 @@ class PlayerInterface:
         btn = Button(self.message_frame, text="Descartar", command=self.descartar)
         btn.pack(side='right')
         
-        self.an_image = PhotoImage(file="images/yellow_square.png")
-        self.bg_image = PhotoImage(file="images/background_square.png")
+        self.pasta = os.path.dirname(__file__)
+        
+        self.an_image = PhotoImage(file=self.pasta+"/images/yellow_square.png")
+        self.bg_image = PhotoImage(file=self.pasta+"/images/background_square.png")
             
         self.board_view = []
         for y in range(9):
@@ -48,17 +61,23 @@ class PlayerInterface:
         self.menu_file = Menu(self.menubar)
         self.menubar.add_cascade(menu=self.menu_file, label='File')
         # Adicionar itens de menu a cada menu adicionado à barra de menu:
-        self.menu_file.add_command(label='Iniciar jogo', command=self.start_match)
-        self.menu_file.add_command(label='restaurar estado inicial', command=self.start_game)
+        self.menu_file.add_command(label='start_match', command=self.start_match)
+        self.menu_file.add_command(label='start_game', command=self.start_game)
         
     def click(self, event, line, column):
         print('CLICK', line, column)
         
     def start_match(self):
-        print('start_match')
+        self.start_status = self.dog_server_interface.start_match(2)
+        message = self.start_status.get_message()
+        messagebox.showinfo(message=message)
         
     def start_game(self):
         print('start_game')
+        
+    def receive_start(self, start_status):
+        message = start_status.get_message()
+        messagebox.showinfo(message=message)
     
     def descartar(self):
         print("Descartar")
