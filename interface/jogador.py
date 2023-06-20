@@ -29,3 +29,6 @@ class Jogador:
     
     def adicionaCarta(self, carta):
         self.cartas.append(carta)
+    
+    def getCartas(self):
+        return self.cartas

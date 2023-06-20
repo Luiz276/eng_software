@@ -6,6 +6,7 @@ from dog.dog_interface import DogPlayerInterface
 from dog.dog_actor import DogActor
 from mesa import Mesa
 import os
+from PIL import Image,ImageTk
 
 class PlayerInterface(DogPlayerInterface):
     def __init__(self):
@@ -14,7 +15,7 @@ class PlayerInterface(DogPlayerInterface):
         
         self.mesa = Mesa()
         self.game_state = 1
-        #self.update_interface(self.game_state)
+        self.update_gui(self.game_state)
 
         player_name = simpledialog.askstring(title='Player Indentification', prompt="Qual o seu nome?")
         self.dog_server_interface = DogActor()
@@ -91,24 +92,25 @@ class PlayerInterface(DogPlayerInterface):
                     self.mesa.start_match(players, local_player_id)
 
                     game_state = self.mesa.getStatus()
-                    #self.update_interface(game_state)
+                    self.update_gui(game_state)
+        print("PARTIDA INICIADA")
         
     # def start_game(self):
     #     print('start_game')
-    #     match_status = self.getStatus()
-    #     if match_status == 1:
-    #         answer = askyesno('START', 'Deseja iniciar uma nova partida?')
-    #         if answer:
-    #             self.dog_server_interface.start_match(2)
-    #             code = startStatus.get_code()
-    #             message = startStatus.get_message()
-    #             if code==0 or code==1:
-    #                 messagebox.showinfo(message)
-    #             if code==2:
-
         
     def receive_start(self, start_status):
         message = start_status.get_message()
+
+        # -------------
+        # Nosso jogo não possui reset
+        # -------------
+        # self.start_game()  #    use case reset game
+
+        players = start_status.get_players()
+        local_player_id = start_status.get_local_id()
+        self.mesa.start_match(players, local_player_id)
+        game_state = self.board.get_status()
+        self.update_gui(game_state)
         messagebox.showinfo(message=message)
     
     def descartar(self):
@@ -116,3 +118,42 @@ class PlayerInterface(DogPlayerInterface):
     
     def getStatus(self):
         return self.game_state
+    
+    def update_gui(self, game_state: int):
+        # Loop por trincas de cada jogador e pela mão do jogador local
+        # Assim como por baralho e descarte
+        naipes_eng = {
+            'ouros': 'diamonds',
+            'paus' : 'clubs',
+            'espadas' : 'spades',
+            'copas' : 'hearts'
+        }
+        numeros = {
+            'A' : 'ace',
+            '2' : '2',
+            '3' : '3',
+            '4' : '4',
+            '5' : '5',
+            '6' : '6',
+            '7' : '7',
+            '8' : '8',
+            '9' : '9',
+            '10' : '10',
+            'J' : 'jack',
+            'Q' : 'queen',
+            'K' : 'king'
+        }
+        cartas_locais = self.mesa.local_player.getCartas()
+        self.image = []
+        for i in range(9):
+            if i < len(cartas_locais):
+                location = self.pasta+"/images/"+f"{numeros[cartas_locais[i].getNum()]}"+"_of_"+f"{naipes_eng[cartas_locais[i].getNaipe()]}"+".png"
+                img = ImageTk.PhotoImage(Image.open(location).resize((117,117)))
+            else:
+                #location = self.an_image
+                img = self.an_image
+            #img.resize()
+            self.board_view[i][6].configure(image=img)
+            self.image.append(img)
+            #self.main_window.update_idletasks()
+            #self.board_view[i][6].update()
