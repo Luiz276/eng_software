@@ -1,8 +1,10 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import simpledialog
+from tkinter.messagebox import askyesno
 from dog.dog_interface import DogPlayerInterface
 from dog.dog_actor import DogActor
+from mesa import Mesa
 import os
 
 class PlayerInterface(DogPlayerInterface):
@@ -10,6 +12,10 @@ class PlayerInterface(DogPlayerInterface):
         self.main_window = Tk()
         self.fill_main_window()
         
+        self.mesa = Mesa()
+        self.game_state = 1
+        #self.update_interface(self.game_state)
+
         player_name = simpledialog.askstring(title='Player Indentification', prompt="Qual o seu nome?")
         self.dog_server_interface = DogActor()
         message = self.dog_server_interface.initialize(player_name, self)
@@ -62,18 +68,44 @@ class PlayerInterface(DogPlayerInterface):
         self.menubar.add_cascade(menu=self.menu_file, label='File')
         # Adicionar itens de menu a cada menu adicionado à barra de menu:
         self.menu_file.add_command(label='start_match', command=self.start_match)
-        self.menu_file.add_command(label='start_game', command=self.start_game)
+        self.menu_file.add_command(label='start_game', command=self.start_match)
         
     def click(self, event, line, column):
         print('CLICK', line, column)
         
     def start_match(self):
-        self.start_status = self.dog_server_interface.start_match(2)
-        message = self.start_status.get_message()
-        messagebox.showinfo(message=message)
+        print('start_match')
+        match_status = self.mesa.getStatus()
+        if match_status==1 or match_status==0:
+            answer = askyesno('START', 'Deseja iniciar uma nova partida?')
+            if answer:
+                start_status = self.dog_server_interface.start_match(2)
+                code = start_status.get_code()
+                message = start_status.get_message()
+                if code=="0" or code=="1":
+                    messagebox.showinfo(message)
+                else: #if code==2:
+                    players = start_status.get_players()
+                    local_player_id = start_status.get_local_id()
+                    print("ELSE")
+                    self.mesa.start_match(players, local_player_id)
+
+                    game_state = self.mesa.getStatus()
+                    #self.update_interface(game_state)
         
-    def start_game(self):
-        print('start_game')
+    # def start_game(self):
+    #     print('start_game')
+    #     match_status = self.getStatus()
+    #     if match_status == 1:
+    #         answer = askyesno('START', 'Deseja iniciar uma nova partida?')
+    #         if answer:
+    #             self.dog_server_interface.start_match(2)
+    #             code = startStatus.get_code()
+    #             message = startStatus.get_message()
+    #             if code==0 or code==1:
+    #                 messagebox.showinfo(message)
+    #             if code==2:
+
         
     def receive_start(self, start_status):
         message = start_status.get_message()
@@ -81,3 +113,6 @@ class PlayerInterface(DogPlayerInterface):
     
     def descartar(self):
         print("Descartar")
+    
+    def getStatus(self):
+        return self.game_state
