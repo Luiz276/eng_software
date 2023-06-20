@@ -109,7 +109,7 @@ class PlayerInterface(DogPlayerInterface):
         players = start_status.get_players()
         local_player_id = start_status.get_local_id()
         self.mesa.start_match(players, local_player_id)
-        game_state = self.board.get_status()
+        game_state = self.mesa.getStatus()
         self.update_gui(game_state)
         messagebox.showinfo(message=message)
     
