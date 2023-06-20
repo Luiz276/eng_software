@@ -9,3 +9,8 @@ class Descarte:
         if len(self.cartas) < 1:
             return None
         return self.cartas.pop(-1)
+    
+    def peek_top(self):
+        if len(self.cartas) > 0:
+            return self.cartas[-1]
+        return None

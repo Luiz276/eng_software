@@ -26,3 +26,6 @@ class Baralho:
         for i in range(9):
             mao.append(self.cartas.pop())
         return mao
+    
+    def getCartas(self):
+        return self.cartas

@@ -144,7 +144,8 @@ class PlayerInterface(DogPlayerInterface):
             'K' : 'king'
         }
         cartas_locais = self.mesa.local_player.getCartas()
-        self.image = []
+        self.image = set()
+        # loop das cartas do jogador local:
         for i in range(9):
             if i < len(cartas_locais):
                 location = self.pasta+"/images/"+f"{numeros[cartas_locais[i].getNum()]}"+"_of_"+f"{naipes_eng[cartas_locais[i].getNaipe()]}"+".png"
@@ -154,6 +155,24 @@ class PlayerInterface(DogPlayerInterface):
                 img = self.an_image
             #img.resize()
             self.board_view[i][6].configure(image=img)
-            self.image.append(img)
+            self.image.add(img)
             #self.main_window.update_idletasks()
             #self.board_view[i][6].update()
+        # baralho
+        location = self.pasta+"/images/"+"card_back"+".png"
+        img = ImageTk.PhotoImage(Image.open(location).resize((117,117)))
+        self.board_view[3][2].configure(image=img)
+        self.image.add(img)
+
+        if self.mesa.getStatus() != 1:
+            # descarte
+            top = self.mesa.descarte.peek_top()
+            if top:
+                location = self.pasta+"/images/"+f"{numeros[top.getNum()]}"+"_of_"+f"{naipes_eng[top.getNaipe()]}"+".png"
+                img = ImageTk.PhotoImage(Image.open(location).resize((117,117)))
+            else:
+                img = self.an_image
+            # self.board_view[3][2].configure(image=img)
+            # self.image.add(img)
+            self.board_view[5][2].configure(image=img)
+            self.image.add(img)

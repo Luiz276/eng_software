@@ -1,5 +1,7 @@
 from jogador import Jogador
 from baralho import Baralho
+from descarte import Descarte
+from trinca import Trinca
 
 class Mesa:
     def __init__(self):
@@ -16,6 +18,7 @@ class Mesa:
     
     def start_match(self, players, local_player_id):
         self.baralho = Baralho()
+        self.descarte = Descarte()
         self.local_player.reset()
         self.remote_player.reset()
         self.local_player.initialize(1, players[0][1], players[0][0], self.baralho)
