@@ -7,7 +7,7 @@ class Jogador:
         self.vez_jogada = False
 
     def initialize(self, aSymbol, an_id, a_name):
-        self.reset()
+        #self.reset()
         self.identifier = an_id  #   string
         self.symbol = aSymbol  # int
         self.name = a_name  #   string

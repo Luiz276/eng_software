@@ -124,18 +124,21 @@ class PlayerInterface(DogPlayerInterface):
                         players = start_status.get_players()
                         local_player_id = start_status.get_local_id()
                         self.mesa.baralho = Baralho()
+
                         c_local = self.mesa.baralho.distribuir_cartas()
+                        self.mesa.local_player.setCartas(c_local)
                         c_local_json = []
                         for carta in c_local:
                             c_local_json.append(jsons.dump(carta))
                         a_move['j1_mao'] = (c_local_json)
-                        self.mesa.local_player.setCartas(c_local)
+                        
                         c_remoto = self.mesa.baralho.distribuir_cartas()
+                        self.mesa.remote_player.setCartas(c_remoto)
                         c_remoto_json = []
                         for carta in c_remoto:
                             c_remoto_json.append(jsons.dump(carta))
                         a_move['j2_mao'] = (c_remoto_json)
-                        self.mesa.remote_player.setCartas(c_remoto)
+                        
                         self.mesa.start_match(players, local_player_id)
                         if self.mesa.getStatus() == 2:
                             self.game_state = 2
@@ -155,6 +158,7 @@ class PlayerInterface(DogPlayerInterface):
                 a_move['baralho'] = jsons.dump(self.mesa.baralho.getCartas())
                 a_move['match_status'] = 'next'
                 self.dog_server_interface.send_move(a_move)
+            print("end")
 
     def start_match(self):
         if self.game_state == 1:
@@ -181,8 +185,8 @@ class PlayerInterface(DogPlayerInterface):
                             self.turn_label.configure(text='VEZ OPONENTE')
                             self.turn_label.pack(side='left')
 
-            game_state = self.mesa.getStatus()
-            self.update_gui(game_state)
+            status = self.mesa.getStatus()
+            self.update_gui(status)
             print("PARTIDA INICIADA")
             print("self.game_state = ", self.game_state)
         
@@ -200,7 +204,7 @@ class PlayerInterface(DogPlayerInterface):
             print(players)
             local_player_id = start_status.get_local_id()
             self.mesa.start_match(players, local_player_id)
-            game_state = self.mesa.getStatus()
+            status = self.mesa.getStatus()
             if self.mesa.getStatus() == 2:
                 self.game_state = 2
                 self.turn_label.configure(text='   SUA VEZ  ')
@@ -209,7 +213,7 @@ class PlayerInterface(DogPlayerInterface):
                 self.game_state = 6
                 self.turn_label.configure(text='VEZ OPONENTE')
                 self.turn_label.pack(side='left')
-            self.update_gui(game_state)
+            self.update_gui(status)
             messagebox.showinfo(message=message)
     
     def receive_move(self, a_move):
@@ -223,12 +227,16 @@ class PlayerInterface(DogPlayerInterface):
         if self.game_state == 3 or self.game_state == 4:
             self.game_state = 5
             print("Descartar")
+        status = self.mesa.getStatus()
+        self.update_gui(status)
 
     def baixar(self):
         if self.game_state == 3 or self.game_state == 5:
             self.game_state = 4
             self.nova_trinca = []
             print("Baixar")
+        status = self.mesa.getStatus()
+        self.update_gui(status)
     
     def getStatus(self):
         return self.game_state
@@ -258,6 +266,7 @@ class PlayerInterface(DogPlayerInterface):
             'K' : 'king'
         }
         cartas_locais = self.mesa.local_player.getCartas()
+        print(cartas_locais)
         self.image = set()
         # loop das cartas do jogador local:
         for i in range(10):
@@ -283,7 +292,7 @@ class PlayerInterface(DogPlayerInterface):
             # descarte
             top = self.mesa.descarte.peek_top()
             if top:
-                location = self.pasta+"/images/"+f"{numeros[top.getNum()]}"+"_of_"+f"{naipes_eng[top.getNaipe()]}"+".png"
+                location = self.pasta+"/images/"+f"{numeros[str(top.getNum())]}"+"_of_"+f"{naipes_eng[top.getNaipe()]}"+".png"
                 img = ImageTk.PhotoImage(Image.open(location).resize((117,117)))
             else:
                 img = self.an_image
@@ -293,10 +302,8 @@ class PlayerInterface(DogPlayerInterface):
             self.image.add(img)
         
         if self.mesa.getStatus() == 2:
-            self.game_state = 2
             self.turn_label.configure(text='   SUA VEZ  ')
             self.turn_label.pack(side='left')
         elif self.mesa.getStatus() == 3:
-            self.game_state = 6
             self.turn_label.configure(text='VEZ OPONENTE')
             self.turn_label.pack(side='left')
