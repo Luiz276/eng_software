@@ -2,6 +2,7 @@ from jogador import Jogador
 from baralho import Baralho
 from descarte import Descarte
 from trinca import Trinca
+from carta import Carta
 
 class Mesa:
     def __init__(self):
@@ -14,14 +15,16 @@ class Mesa:
         self.trincas = []
 
         self.match_status = 1
+        self.baralho = None
+        self.descarte = Descarte()
     
     def start_match(self, players, local_player_id):
-        self.baralho = Baralho()
-        self.descarte = Descarte()
-        self.local_player.reset()
-        self.remote_player.reset()
-        self.local_player.initialize(1, players[0][1], players[0][0], self.baralho)
-        self.remote_player.initialize(2, players[1][1], players[1][0], self.baralho)
+        # self.baralho = Baralho()
+        # self.descarte = Descarte()
+        # self.local_player.reset()
+        # self.remote_player.reset()
+        self.local_player.initialize(1, players[0][1], players[0][0])
+        self.remote_player.initialize(2, players[1][1], players[1][0])
         if players[0][2] == "1":
             self.local_player.toggle_turn()
             self.match_status = 2  #    waiting piece or origin selection (first action)
@@ -35,9 +38,16 @@ class Mesa:
 
     def receive_move(self,a_move):
         if self.baralho == None:
+            print("receive baralho")
             self.baralho = Baralho()
-            self.baralho.set_cards(a_move["baralho"])
+            #print(a_move["baralho"])
+            self.baralho.set_cards(self.getBaralhoFromDict(a_move["baralho"]))
+            self.local_player.setCartas(self.getMaoFromCartas(a_move["j2_mao"]))
+            self.remote_player.setCartas(self.getMaoFromCartas(a_move['j1_mao']))
+            print(self.local_player.cartas)
+            print(self.remote_player.cartas)
         else:
+            print("receive else")
             if a_move["comprou_baralho"]:
                 self.comprou_baralho(self.remote_player, True)
             else:
@@ -45,8 +55,9 @@ class Mesa:
 
             for trinca in a_move["trincas_baixadas"]:
                 self.baixar_trinca(self.remote_player, trinca)
-            self.descartar_carta(a_move["carta_descarte"])
-        self.toggle_turn()
+            self.descartar_carta(self.getCartaFromDict(a_move["carta_descarte"]))
+
+            self.toggle_turn()
 
     def baixar_trinca(self, player: Jogador, trinca:list()):
         if self.valido(trinca):
@@ -87,3 +98,27 @@ class Mesa:
             return int(trinca[0].getNum())+1 == int(trinca[1].getNum()) and int(trinca[0].getNum())+2 == int(trinca[2].getNum())
         else:
             return trinca[0].getNum() == trinca[1].getNum and trinca[0].getNum() == trinca[2].getNum()
+    
+    def getCartaFromDict(self, dic):
+        num = dic['num']
+        naipe = dic['naipe']
+        return Carta(num, naipe)
+    
+    def getMaoFromCartas(self, cartas):
+        mao = []
+        for i in cartas:
+            num = i['num']
+            naipe = i['naipe']
+            mao.append(Carta(num, naipe))
+        return mao
+
+    def getBaralhoFromDict(self, dic):
+        print("bar from dic")
+        print(dic)
+        bar = []
+        for i in dic:
+            print(i)
+            num = i['num']
+            naipe = i['naipe']
+            bar.append(Carta(num, naipe))
+        return bar

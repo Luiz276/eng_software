@@ -7,6 +7,8 @@ from dog.dog_actor import DogActor
 from mesa import Mesa
 import os
 from PIL import Image,ImageTk
+import jsons
+from baralho import Baralho
 
 class PlayerInterface(DogPlayerInterface):
     def __init__(self):
@@ -73,8 +75,8 @@ class PlayerInterface(DogPlayerInterface):
         self.menu_file = Menu(self.menubar)
         self.menubar.add_cascade(menu=self.menu_file, label='File')
         # Adicionar itens de menu a cada menu adicionado à barra de menu:
-        self.menu_file.add_command(label='start_match', command=self.start_match)
-        self.menu_file.add_command(label='start_game', command=self.start_match)
+        self.menu_file.add_command(label='start_match', command=self.start_match_and_send)
+        #self.menu_file.add_command(label='start_game', command=self.start_match_and_send)
         
     def click(self, event, line, column):
         print('CLICK', line, column)
@@ -90,7 +92,7 @@ class PlayerInterface(DogPlayerInterface):
             if self.getStatus() == 5:
                 print('descarte')
                 self.mesa.descartar_carta(self.mesa.local_player, self.mesa.local_player.cartas[column])
-                self.game_state = 3
+                self.game_state = 6
             if self.getStatus() == 4:
                 print('card baixar')
                 self.nova_trinca.append(self.mesa.local_player.cartas[column])
@@ -98,12 +100,62 @@ class PlayerInterface(DogPlayerInterface):
                     print('trinca')
                     self.mesa.baixar_trinca(self.mesa.local_player, self.nova_trinca)
                     self.nova_trinca = []
-                #self.game_state = 3
+                self.game_state = 3
+        print(self.game_state)
+        status = self.mesa.getStatus()
+        self.update_gui(status)
         
-        game_state = self.mesa.getStatus()
-        self.update_gui(game_state)
 
         
+    def start_match_and_send(self):
+        if self.game_state == 1:
+            a_move = {}
+            print('start_match')
+            match_status = self.mesa.getStatus()
+            if match_status==1 or match_status==0:
+                answer = askyesno('START', 'Deseja iniciar uma nova partida?')
+                if answer:
+                    start_status = self.dog_server_interface.start_match(2)
+                    code = start_status.get_code()
+                    message = start_status.get_message()
+                    if code=="0" or code=="1":
+                        messagebox.showinfo(message)
+                    else: #if code==2:
+                        players = start_status.get_players()
+                        local_player_id = start_status.get_local_id()
+                        self.mesa.baralho = Baralho()
+                        c_local = self.mesa.baralho.distribuir_cartas()
+                        c_local_json = []
+                        for carta in c_local:
+                            c_local_json.append(jsons.dump(carta))
+                        a_move['j1_mao'] = (c_local_json)
+                        self.mesa.local_player.setCartas(c_local)
+                        c_remoto = self.mesa.baralho.distribuir_cartas()
+                        c_remoto_json = []
+                        for carta in c_remoto:
+                            c_remoto_json.append(jsons.dump(carta))
+                        a_move['j2_mao'] = (c_remoto_json)
+                        self.mesa.remote_player.setCartas(c_remoto)
+                        self.mesa.start_match(players, local_player_id)
+                        if self.mesa.getStatus() == 2:
+                            self.game_state = 2
+                            self.turn_label.configure(text='   SUA VEZ  ')
+                            self.turn_label.pack(side='left')
+                        elif self.mesa.getStatus() == 3:
+                            self.game_state = 6
+                            self.turn_label.configure(text='VEZ OPONENTE')
+                            self.turn_label.pack(side='left')
+
+            game_state = self.mesa.getStatus()
+            self.update_gui(game_state)
+            print("PARTIDA INICIADA")
+            print("self.game_state = ", self.game_state)
+            if game_state == 2 or game_state == 3:
+                print("send")
+                a_move['baralho'] = jsons.dump(self.mesa.baralho.getCartas())
+                a_move['match_status'] = 'next'
+                self.dog_server_interface.send_move(a_move)
+
     def start_match(self):
         if self.game_state == 1:
             print('start_match')
@@ -132,9 +184,11 @@ class PlayerInterface(DogPlayerInterface):
             game_state = self.mesa.getStatus()
             self.update_gui(game_state)
             print("PARTIDA INICIADA")
+            print("self.game_state = ", self.game_state)
         
     def receive_start(self, start_status):
-        if self.getStatus() ==1:
+        #if self.getStatus() == 1:
+            print("receive_start")
             message = start_status.get_message()
 
             # -------------
@@ -143,6 +197,7 @@ class PlayerInterface(DogPlayerInterface):
             # self.start_game()  #    use case reset game
 
             players = start_status.get_players()
+            print(players)
             local_player_id = start_status.get_local_id()
             self.mesa.start_match(players, local_player_id)
             game_state = self.mesa.getStatus()
@@ -158,11 +213,11 @@ class PlayerInterface(DogPlayerInterface):
             messagebox.showinfo(message=message)
     
     def receive_move(self, a_move):
-        if self.getStatus() ==6:
-            #return super().receive_move(a_move)
-            self.mesa.receive_move(a_move)
-            game_state = self.mesa.getStatus()
-            self.update_gui(game_state)
+        #return super().receive_move(a_move)
+        print("rec")
+        self.mesa.receive_move(a_move)
+        game_state = self.mesa.getStatus()
+        self.update_gui(game_state)
 
     def descartar(self):
         if self.game_state == 3 or self.game_state == 4:
@@ -207,7 +262,7 @@ class PlayerInterface(DogPlayerInterface):
         # loop das cartas do jogador local:
         for i in range(10):
             if i < len(cartas_locais):
-                location = self.pasta+"/images/"+f"{numeros[cartas_locais[i].getNum()]}"+"_of_"+f"{naipes_eng[cartas_locais[i].getNaipe()]}"+".png"
+                location = self.pasta+"/images/"+f"{numeros[str(cartas_locais[i].getNum())]}"+"_of_"+f"{naipes_eng[cartas_locais[i].getNaipe()]}"+".png"
                 img = ImageTk.PhotoImage(Image.open(location).resize((117,117)))
             else:
                 #location = self.an_image
@@ -218,12 +273,13 @@ class PlayerInterface(DogPlayerInterface):
             #self.main_window.update_idletasks()
             #self.board_view[i][6].update()
         # baralho
+        #if game_state == 1 or (len(self.mesa.baralho.getCartas()) > 0 and self.mesa.baralho != None):
         location = self.pasta+"/images/"+"card_back"+".png"
         img = ImageTk.PhotoImage(Image.open(location).resize((117,117)))
         self.board_view[3][2].configure(image=img)
         self.image.add(img)
 
-        if game_state != 1:
+        if game_state != 1 and self.mesa != None:
             # descarte
             top = self.mesa.descarte.peek_top()
             if top:
@@ -235,3 +291,12 @@ class PlayerInterface(DogPlayerInterface):
             # self.image.add(img)
             self.board_view[5][2].configure(image=img)
             self.image.add(img)
+        
+        if self.mesa.getStatus() == 2:
+            self.game_state = 2
+            self.turn_label.configure(text='   SUA VEZ  ')
+            self.turn_label.pack(side='left')
+        elif self.mesa.getStatus() == 3:
+            self.game_state = 6
+            self.turn_label.configure(text='VEZ OPONENTE')
+            self.turn_label.pack(side='left')

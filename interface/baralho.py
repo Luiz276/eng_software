@@ -15,7 +15,7 @@ class Baralho:
                 elif num==11:
                     self.cartas.append(Carta('J', naipe))
                 else:
-                    self.cartas.append(Carta(str(num), naipe))
+                    self.cartas.append(Carta(num, naipe))
         self.embaralhar()
     
     def embaralhar(self):

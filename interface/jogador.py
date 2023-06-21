@@ -6,12 +6,15 @@ class Jogador:
         self.trincas = []
         self.vez_jogada = False
 
-    def initialize(self, aSymbol, an_id, a_name, baralho):
+    def initialize(self, aSymbol, an_id, a_name):
         self.reset()
         self.identifier = an_id  #   string
         self.symbol = aSymbol  # int
         self.name = a_name  #   string
-        self.cartas = baralho.distribuir_cartas()
+        #self.cartas = baralho.distribuir_cartas()
+    
+    def setCartas(self, cartas):
+        self.cartas = cartas
 
     def reset(self):
         self.identifier = ""  #   string
