@@ -105,8 +105,6 @@ class PlayerInterface(DogPlayerInterface):
         status = self.mesa.getStatus()
         self.update_gui(status)
         
-
-        
     def start_match_and_send(self):
         if self.game_state == 1:
             a_move = {}

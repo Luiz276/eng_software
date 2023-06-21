@@ -17,6 +17,25 @@ class Mesa:
         self.match_status = 1
         self.baralho = None
         self.descarte = Descarte()
+        
+    def get_turn_player(self):
+        if self.local_player.vez_jogada == True:
+            return self.local_player
+        else:
+            return self.remote_player
+        
+    #def only_one_selected(player: Jogador): bool
+        
+    def get_card_amount(self):
+        j_atual = self.get_turn_player()
+        n = len(j_atual.cartas)
+        return n
+        
+    def swap_turn(self):
+        self.local_player.toggle_turn()
+        self.remote_player.toggle_turn()
+        
+    #def get_game_state(self): int
     
     def start_match(self, players, local_player_id):
         # self.baralho = Baralho()
@@ -35,6 +54,34 @@ class Mesa:
     
     def getStatus(self):
         return self.match_status
+    
+    def validar_trinca(self, trinca):
+        if (trinca[0].naipe == trinca[1].naipe) and (trinca[0].naipe == trinca[2].naipe):
+            trincaNumero = []
+            for i in range(3):
+                if trinca[i].num == 'A':
+                    trincaNumero.append(1)
+                elif trinca[i].num == 'J':
+                    trincaNumero.append(11)
+                elif trinca[i].num == 'Q':
+                    trincaNumero.append(12)
+                elif trinca[i].num == 'K':
+                    trincaNumero.append(13)
+                else:
+                    trincaNumero.append(trinca[i].num)
+            trincaNumero.sort()
+            if ((trincaNumero[0]+1) == trincaNumero[1]) and ((trincaNumero[0]+2) == trincaNumero[2]):
+                return True
+            else:
+                return False
+        else:
+            if (trinca[0].num == trinca[1].num) and (trinca[0].num == trinca[2].num):
+                return True
+            else:
+                return False
+            
+    def checa_fim_jogo(self):
+        return len(self.remote_player.getTrincas()) == 3 or len(self.remote_player.getTrincas()) == 3
 
     def receive_move(self,a_move):
         if self.baralho == None:
@@ -59,6 +106,14 @@ class Mesa:
 
             self.toggle_turn()
 
+    #def update_trinca(self, trincas):
+    
+    #def set_turn_discard(self):
+    
+    #def set_turn_baixar(self):
+    
+    #def add_carta_trinca(self, card):
+
     def baixar_trinca(self, player: Jogador, trinca:list()):
         if self.valido(trinca):
             nova_trinca = Trinca(player, trinca)
@@ -68,6 +123,12 @@ class Mesa:
             self.trincas.append(nova_trinca)
             if self.checa_fim_jogo():
                 self.match_status = 4
+                
+    def get_num_trincas(self, player: Jogador):
+        return len(player.trincas)
+    
+    def checaVez(self):
+        return self.local_player.vez_jogada
 
     def descartar_carta(self, player:Jogador, card):
         player.remove_card(card)
@@ -84,9 +145,6 @@ class Mesa:
     def toggle_turn(self):
         self.local_player.toggle_turn()
         self.remote_player.toggle_turn()
-    
-    def checa_fim_jogo(self):
-        return len(self.remote_player.getTrincas()) == 3 or len(self.remote_player.getTrincas()) == 3
 
     def valido(self, trinca: list()):
         naipe_igual = False
