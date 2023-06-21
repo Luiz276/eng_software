@@ -14,6 +14,7 @@ class PlayerInterface(DogPlayerInterface):
         self.fill_main_window()
         
         self.mesa = Mesa()
+        self.nova_trinca = []
         self.game_state = 1
         self.update_gui(self.game_state)
 
@@ -40,6 +41,10 @@ class PlayerInterface(DogPlayerInterface):
         self.message_frame.grid(row=1 , column=0)
         btn = Button(self.message_frame, text="Descartar", command=self.descartar)
         btn.pack(side='right')
+        btn2 = Button(self.message_frame, text="Baixar Trinca", command=self.baixar)
+        btn2.pack(side='right')
+        self.turn_label = Label(self.message_frame, bd=0, text='AGUARDANDO INÍCIO')
+        self.turn_label.pack(side='left')
         
         self.pasta = os.path.dirname(__file__)
         
@@ -47,7 +52,7 @@ class PlayerInterface(DogPlayerInterface):
         self.bg_image = PhotoImage(file=self.pasta+"/images/background_square.png")
             
         self.board_view = []
-        for y in range(9):
+        for y in range(10):
             a_column = []
             for x in range(7):
                 if (((x == 4 or x == 0) and ((y % 3) == 1)) or ((x == 2) and (y == 3 or y == 5)) or (x == 6)):
@@ -73,48 +78,102 @@ class PlayerInterface(DogPlayerInterface):
         
     def click(self, event, line, column):
         print('CLICK', line, column)
+        if line == 2 and self.getStatus() == 2:
+            print("compra")
+            if column == 5:
+                self.mesa.comprou_baralho(self.mesa.local_player, False)
+            elif column ==3:
+                self.mesa.comprou_baralho(self.mesa.local_player, True)
+                print('baralho')
+            self.game_state = 3
+        elif line == 6:
+            if self.getStatus() == 5:
+                print('descarte')
+                self.mesa.descartar_carta(self.mesa.local_player, self.mesa.local_player.cartas[column])
+                self.game_state = 3
+            if self.getStatus() == 4:
+                print('card baixar')
+                self.nova_trinca.append(self.mesa.local_player.cartas[column])
+                if len(self.nova_trinca) == 3:
+                    print('trinca')
+                    self.mesa.baixar_trinca(self.mesa.local_player, self.nova_trinca)
+                    self.nova_trinca = []
+                #self.game_state = 3
         
-    def start_match(self):
-        print('start_match')
-        match_status = self.mesa.getStatus()
-        if match_status==1 or match_status==0:
-            answer = askyesno('START', 'Deseja iniciar uma nova partida?')
-            if answer:
-                start_status = self.dog_server_interface.start_match(2)
-                code = start_status.get_code()
-                message = start_status.get_message()
-                if code=="0" or code=="1":
-                    messagebox.showinfo(message)
-                else: #if code==2:
-                    players = start_status.get_players()
-                    local_player_id = start_status.get_local_id()
-                    print("ELSE")
-                    self.mesa.start_match(players, local_player_id)
-
-                    game_state = self.mesa.getStatus()
-                    self.update_gui(game_state)
-        print("PARTIDA INICIADA")
-        
-    # def start_game(self):
-    #     print('start_game')
-        
-    def receive_start(self, start_status):
-        message = start_status.get_message()
-
-        # -------------
-        # Nosso jogo não possui reset
-        # -------------
-        # self.start_game()  #    use case reset game
-
-        players = start_status.get_players()
-        local_player_id = start_status.get_local_id()
-        self.mesa.start_match(players, local_player_id)
         game_state = self.mesa.getStatus()
         self.update_gui(game_state)
-        messagebox.showinfo(message=message)
+
+        
+    def start_match(self):
+        if self.game_state == 1:
+            print('start_match')
+            match_status = self.mesa.getStatus()
+            if match_status==1 or match_status==0:
+                answer = askyesno('START', 'Deseja iniciar uma nova partida?')
+                if answer:
+                    start_status = self.dog_server_interface.start_match(2)
+                    code = start_status.get_code()
+                    message = start_status.get_message()
+                    if code=="0" or code=="1":
+                        messagebox.showinfo(message)
+                    else: #if code==2:
+                        players = start_status.get_players()
+                        local_player_id = start_status.get_local_id()
+                        self.mesa.start_match(players, local_player_id)
+                        if self.mesa.getStatus() == 2:
+                            self.game_state = 2
+                            self.turn_label.configure(text='   SUA VEZ  ')
+                            self.turn_label.pack(side='left')
+                        elif self.mesa.getStatus() == 3:
+                            self.game_state = 6
+                            self.turn_label.configure(text='VEZ OPONENTE')
+                            self.turn_label.pack(side='left')
+
+            game_state = self.mesa.getStatus()
+            self.update_gui(game_state)
+            print("PARTIDA INICIADA")
+        
+    def receive_start(self, start_status):
+        if self.getStatus() ==1:
+            message = start_status.get_message()
+
+            # -------------
+            # Nosso jogo não possui reset
+            # -------------
+            # self.start_game()  #    use case reset game
+
+            players = start_status.get_players()
+            local_player_id = start_status.get_local_id()
+            self.mesa.start_match(players, local_player_id)
+            game_state = self.mesa.getStatus()
+            if self.mesa.getStatus() == 2:
+                self.game_state = 2
+                self.turn_label.configure(text='   SUA VEZ  ')
+                self.turn_label.pack(side='left')
+            elif self.mesa.getStatus() == 3:
+                self.game_state = 6
+                self.turn_label.configure(text='VEZ OPONENTE')
+                self.turn_label.pack(side='left')
+            self.update_gui(game_state)
+            messagebox.showinfo(message=message)
     
+    def receive_move(self, a_move):
+        if self.getStatus() ==6:
+            #return super().receive_move(a_move)
+            self.mesa.receive_move(a_move)
+            game_state = self.mesa.getStatus()
+            self.update_gui(game_state)
+
     def descartar(self):
-        print("Descartar")
+        if self.game_state == 3 or self.game_state == 4:
+            self.game_state = 5
+            print("Descartar")
+
+    def baixar(self):
+        if self.game_state == 3 or self.game_state == 5:
+            self.game_state = 4
+            self.nova_trinca = []
+            print("Baixar")
     
     def getStatus(self):
         return self.game_state
@@ -146,7 +205,7 @@ class PlayerInterface(DogPlayerInterface):
         cartas_locais = self.mesa.local_player.getCartas()
         self.image = set()
         # loop das cartas do jogador local:
-        for i in range(9):
+        for i in range(10):
             if i < len(cartas_locais):
                 location = self.pasta+"/images/"+f"{numeros[cartas_locais[i].getNum()]}"+"_of_"+f"{naipes_eng[cartas_locais[i].getNaipe()]}"+".png"
                 img = ImageTk.PhotoImage(Image.open(location).resize((117,117)))
@@ -164,7 +223,7 @@ class PlayerInterface(DogPlayerInterface):
         self.board_view[3][2].configure(image=img)
         self.image.add(img)
 
-        if self.mesa.getStatus() != 1:
+        if game_state != 1:
             # descarte
             top = self.mesa.descarte.peek_top()
             if top:

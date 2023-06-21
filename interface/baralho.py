@@ -23,9 +23,17 @@ class Baralho:
     
     def distribuir_cartas(self):
         mao = []
-        for i in range(9):
+        for _ in range(9):
             mao.append(self.cartas.pop())
         return mao
     
     def getCartas(self):
         return self.cartas
+    
+    def set_cards(self, cards):
+        self.cartas = cards
+    
+    def retirarCarta(self):
+        if len(self.cartas) < 1:
+            return None
+        return self.cartas.pop(-1)

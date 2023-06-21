@@ -32,3 +32,9 @@ class Jogador:
     
     def getCartas(self):
         return self.cartas
+    
+    def remove_card(self, card):
+        self.cartas.remove(card)
+    
+    def getTrincas(self):
+        return self.trincas
