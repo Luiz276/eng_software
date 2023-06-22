@@ -32,6 +32,10 @@ class Mesa:
         return n
         
     def swap_turn(self):
+        if self.getStatus() == 3:
+            self.match_status = 2
+        else:
+            self.match_status = 3
         self.local_player.toggle_turn()
         self.remote_player.toggle_turn()
         
@@ -102,9 +106,15 @@ class Mesa:
 
             for trinca in a_move["trincas_baixadas"]:
                 self.baixar_trinca(self.remote_player, trinca)
-            self.descartar_carta(self.getCartaFromDict(a_move["carta_descarte"]))
+            
+            if a_move["carta_descarte"] != None:
+                self.descartar_carta(self.getCartaFromDict(a_move["carta_descarte"]))
 
-            self.toggle_turn()
+            if a_move['match_status'] == 'end':
+                print("END GAME")
+
+            self.swap_turn()
+        #self.swap_turn()
 
     #def update_trinca(self, trincas):
     
@@ -123,6 +133,8 @@ class Mesa:
             self.trincas.append(nova_trinca)
             if self.checa_fim_jogo():
                 self.match_status = 4
+            return True
+        return False
                 
     def get_num_trincas(self, player: Jogador):
         return len(player.trincas)
@@ -133,6 +145,7 @@ class Mesa:
     def descartar_carta(self, player:Jogador, card):
         player.remove_card(card)
         self.descarte.push_top(card)
+        self.swap_turn()
 
     def comprou_baralho(self, player: Jogador, comprou_baralho: bool):
         if comprou_baralho:

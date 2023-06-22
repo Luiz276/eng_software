@@ -19,7 +19,13 @@ class PlayerInterface(DogPlayerInterface):
         self.nova_trinca = []
         self.game_state = 1
         self.update_gui(self.game_state)
-
+        self.a_move = {
+            "trincas_baixadas" : [],
+            "carta_descarte" : None,
+            "comprou_baralho" : None,
+            "baralho" : None,
+            "match_status" : None
+        }
         player_name = simpledialog.askstring(title='Player Indentification', prompt="Qual o seu nome?")
         self.dog_server_interface = DogActor()
         message = self.dog_server_interface.initialize(player_name, self)
@@ -83,31 +89,36 @@ class PlayerInterface(DogPlayerInterface):
         if line == 2 and self.getStatus() == 2:
             print("compra")
             if column == 5:
+                self.a_move["comprou_baralho"] = False
                 self.mesa.comprou_baralho(self.mesa.local_player, False)
             elif column ==3:
+                self.a_move["comprou_baralho"] = True
                 self.mesa.comprou_baralho(self.mesa.local_player, True)
                 print('baralho')
             self.game_state = 3
         elif line == 6:
             if self.getStatus() == 5:
                 print('descarte')
-                self.mesa.descartar_carta(self.mesa.local_player, self.mesa.local_player.cartas[column])
+                card = self.mesa.local_player.cartas[column]
+                self.mesa.descartar_carta(self.mesa.local_player, card)
+                self.a_move["carta_descarte"] = jsons.dump(card)
                 self.game_state = 6
             if self.getStatus() == 4:
                 print('card baixar')
                 self.nova_trinca.append(self.mesa.local_player.cartas[column])
                 if len(self.nova_trinca) == 3:
                     print('trinca')
-                    self.mesa.baixar_trinca(self.mesa.local_player, self.nova_trinca)
+                    valido = self.mesa.baixar_trinca(self.mesa.local_player, self.nova_trinca)
+                    if valido:
+                        self.a_move["trincas_baixadas"].append(jsons.dump(self.nova_trinca))
                     self.nova_trinca = []
-                self.game_state = 3
+                self.game_state = 5
         print(self.game_state)
         status = self.mesa.getStatus()
         self.update_gui(status)
         
     def start_match_and_send(self):
         if self.game_state == 1:
-            a_move = {}
             print('start_match')
             match_status = self.mesa.getStatus()
             if match_status==1 or match_status==0:
@@ -128,14 +139,14 @@ class PlayerInterface(DogPlayerInterface):
                         c_local_json = []
                         for carta in c_local:
                             c_local_json.append(jsons.dump(carta))
-                        a_move['j1_mao'] = (c_local_json)
+                        self.a_move['j1_mao'] = (c_local_json)
                         
                         c_remoto = self.mesa.baralho.distribuir_cartas()
                         self.mesa.remote_player.setCartas(c_remoto)
                         c_remoto_json = []
                         for carta in c_remoto:
                             c_remoto_json.append(jsons.dump(carta))
-                        a_move['j2_mao'] = (c_remoto_json)
+                        self.a_move['j2_mao'] = (c_remoto_json)
                         
                         self.mesa.start_match(players, local_player_id)
                         if self.mesa.getStatus() == 2:
@@ -153,9 +164,9 @@ class PlayerInterface(DogPlayerInterface):
             print("self.game_state = ", self.game_state)
             if game_state == 2 or game_state == 3:
                 print("send")
-                a_move['baralho'] = jsons.dump(self.mesa.baralho.getCartas())
-                a_move['match_status'] = 'next'
-                self.dog_server_interface.send_move(a_move)
+                self.a_move['baralho'] = jsons.dump(self.mesa.baralho.getCartas())
+                self.a_move['match_status'] = 'next'
+                self.dog_server_interface.send_move(self.a_move)
             print("end")
 
     def start_match(self):
@@ -216,8 +227,9 @@ class PlayerInterface(DogPlayerInterface):
     
     def receive_move(self, a_move):
         #return super().receive_move(a_move)
-        print("rec")
+        print("receber")
         self.mesa.receive_move(a_move)
+        self.game_state = 2
         game_state = self.mesa.getStatus()
         self.update_gui(game_state)
 
@@ -227,6 +239,9 @@ class PlayerInterface(DogPlayerInterface):
             print("Descartar")
         status = self.mesa.getStatus()
         self.update_gui(status)
+        self.dog_server_interface.send_move(self.a_move)
+        self.mesa.swap_turn()
+        self.game_state = 6
 
     def baixar(self):
         if self.game_state == 3 or self.game_state == 5:
@@ -264,7 +279,7 @@ class PlayerInterface(DogPlayerInterface):
             'K' : 'king'
         }
         cartas_locais = self.mesa.local_player.getCartas()
-        print(cartas_locais)
+        #print(cartas_locais)
         self.image = set()
         # loop das cartas do jogador local:
         for i in range(10):
