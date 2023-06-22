@@ -75,11 +75,13 @@ class Mesa:
                     trincaNumero.append(trinca[i].num)
             trincaNumero.sort()
             if ((trincaNumero[0]+1) == trincaNumero[1]) and ((trincaNumero[0]+2) == trincaNumero[2]):
+                print("valida")
                 return True
             else:
                 return False
         else:
             if (trinca[0].num == trinca[1].num) and (trinca[0].num == trinca[2].num):
+                print("valida")
                 return True
             else:
                 return False
@@ -108,7 +110,7 @@ class Mesa:
                 self.baixar_trinca(self.remote_player, trinca)
             
             if a_move["carta_descarte"] != None:
-                self.descartar_carta(self.getCartaFromDict(a_move["carta_descarte"]))
+                self.descartar_carta(self.remote_player, self.getCartaFromDict(a_move["carta_descarte"]))
 
             if a_move['match_status'] == 'end':
                 print("END GAME")
@@ -116,19 +118,11 @@ class Mesa:
             self.swap_turn()
         #self.swap_turn()
 
-    #def update_trinca(self, trincas):
-    
-    #def set_turn_discard(self):
-    
-    #def set_turn_baixar(self):
-    
-    #def add_carta_trinca(self, card):
-
     def baixar_trinca(self, player: Jogador, trinca:list()):
         if self.valido(trinca):
             nova_trinca = Trinca(player, trinca)
             for card in trinca:
-                player.remove_card(card)
+                player.remove_card(card.num, card.naipe)
             player.add_trinca(nova_trinca)
             self.trincas.append(nova_trinca)
             if self.checa_fim_jogo():
@@ -143,7 +137,7 @@ class Mesa:
         return self.local_player.vez_jogada
 
     def descartar_carta(self, player:Jogador, card):
-        player.remove_card(card)
+        player.remove_card(card.num, card.naipe)
         self.descarte.push_top(card)
         self.swap_turn()
 

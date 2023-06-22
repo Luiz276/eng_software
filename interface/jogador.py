@@ -36,8 +36,14 @@ class Jogador:
     def getCartas(self):
         return self.cartas
     
-    def remove_card(self, card):
-        self.cartas.remove(card)
+    def remove_card(self, num, naipe):
+        for i in self.cartas:
+            if i.num == num and i.naipe == naipe:
+                self.cartas.remove(i)
+                break
     
     def getTrincas(self):
         return self.trincas
+    
+    def add_trinca(self, trinca):
+        self.trincas.append(trinca)

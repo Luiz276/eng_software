@@ -103,6 +103,8 @@ class PlayerInterface(DogPlayerInterface):
                 self.mesa.descartar_carta(self.mesa.local_player, card)
                 self.a_move["carta_descarte"] = jsons.dump(card)
                 self.game_state = 6
+                self.dog_server_interface.send_move(self.a_move)
+                self.mesa.swap_turn()
             if self.getStatus() == 4:
                 print('card baixar')
                 self.nova_trinca.append(self.mesa.local_player.cartas[column])
@@ -112,7 +114,7 @@ class PlayerInterface(DogPlayerInterface):
                     if valido:
                         self.a_move["trincas_baixadas"].append(jsons.dump(self.nova_trinca))
                     self.nova_trinca = []
-                self.game_state = 5
+                #self.game_state = 4
         print(self.game_state)
         status = self.mesa.getStatus()
         self.update_gui(status)
@@ -239,9 +241,6 @@ class PlayerInterface(DogPlayerInterface):
             print("Descartar")
         status = self.mesa.getStatus()
         self.update_gui(status)
-        self.dog_server_interface.send_move(self.a_move)
-        self.mesa.swap_turn()
-        self.game_state = 6
 
     def baixar(self):
         if self.game_state == 3 or self.game_state == 5:
