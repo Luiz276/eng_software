@@ -106,8 +106,12 @@ class Mesa:
             else:
                 self.comprou_baralho(self.remote_player, False)
 
+            trinca = []
+            print(a_move["trincas_baixadas"])
             for trinca in a_move["trincas_baixadas"]:
-                self.baixar_trinca(self.remote_player, trinca)
+                print(trinca)
+                self.baixar_trinca(self.remote_player, self.getTrincaFromDict(trinca))
+                print(self.remote_player.getTrincas())
             
             if a_move["carta_descarte"] != None:
                 self.descartar_carta(self.remote_player, self.getCartaFromDict(a_move["carta_descarte"]))
@@ -115,7 +119,7 @@ class Mesa:
             if a_move['match_status'] == 'end':
                 print("END GAME")
 
-            self.swap_turn()
+            self.toggle_turn()
         #self.swap_turn()
 
     def baixar_trinca(self, player: Jogador, trinca:list()):
@@ -154,15 +158,18 @@ class Mesa:
         self.remote_player.toggle_turn()
 
     def valido(self, trinca: list()):
+        print("validando")
         naipe_igual = False
-        if trinca[0].getNaipe() == trinca[1].getNaipe() and trinca[0].getNaipe() == trinca[1].getNaipe():
+        if trinca[0].getNaipe() == trinca[1].getNaipe() and trinca[0].getNaipe() == trinca[2].getNaipe():
             naipe_igual = True
         
         if naipe_igual:
+            print("naipe igual")
             trinca.sort(key=lambda x: x.getNum(), reverse=False)
             return int(trinca[0].getNum())+1 == int(trinca[1].getNum()) and int(trinca[0].getNum())+2 == int(trinca[2].getNum())
         else:
-            return trinca[0].getNum() == trinca[1].getNum and trinca[0].getNum() == trinca[2].getNum()
+            print("naipe diferente")
+            return int(trinca[0].getNum()) == int(trinca[1].getNum()) and int(trinca[0].getNum()) == int(trinca[2].getNum())
     
     def getCartaFromDict(self, dic):
         num = dic['num']
@@ -187,3 +194,13 @@ class Mesa:
             naipe = i['naipe']
             bar.append(Carta(num, naipe))
         return bar
+    
+    def getTrincaFromDict(self, dic):
+        print("trinca from dict")
+        print(dic)
+        trinca = []
+        for i in dic:
+            num = i['num']
+            naipe = i['naipe']
+            trinca.append(Carta(num, naipe))
+        return trinca

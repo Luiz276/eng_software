@@ -63,7 +63,7 @@ class PlayerInterface(DogPlayerInterface):
         for y in range(10):
             a_column = []
             for x in range(7):
-                if (((x == 4 or x == 0) and ((y % 3) == 1)) or ((x == 2) and (y == 3 or y == 5)) or (x == 6)):
+                if (((x == 4 or x == 0) and (y <9)) or ((x == 2) and (y == 3 or y == 5)) or (x == 6)):
                     aLabel = Label(self.table_frame, bd=0, image=self.an_image)
                     aLabel.bind("<Button-1>", lambda event, a_line=x, a_column=y: self.click(event, a_line, a_column))
                 else:
@@ -103,17 +103,21 @@ class PlayerInterface(DogPlayerInterface):
                 self.mesa.descartar_carta(self.mesa.local_player, card)
                 self.a_move["carta_descarte"] = jsons.dump(card)
                 self.game_state = 6
+                self.nova_trinca = []
                 self.dog_server_interface.send_move(self.a_move)
+                #self.a_move["trincas_baixadas"] = []
                 self.mesa.swap_turn()
             if self.getStatus() == 4:
                 print('card baixar')
                 self.nova_trinca.append(self.mesa.local_player.cartas[column])
-                if len(self.nova_trinca) == 3:
+                if len(self.nova_trinca) >= 3:
                     print('trinca')
                     valido = self.mesa.baixar_trinca(self.mesa.local_player, self.nova_trinca)
                     if valido:
+                        print("trinca valida")
                         self.a_move["trincas_baixadas"].append(jsons.dump(self.nova_trinca))
                     self.nova_trinca = []
+                    self.game_state = 3
                 #self.game_state = 4
         print(self.game_state)
         status = self.mesa.getStatus()
@@ -234,6 +238,7 @@ class PlayerInterface(DogPlayerInterface):
         self.game_state = 2
         game_state = self.mesa.getStatus()
         self.update_gui(game_state)
+        self.a_move["trincas_baixadas"] = []
 
     def descartar(self):
         if self.game_state == 3 or self.game_state == 4:
@@ -263,7 +268,7 @@ class PlayerInterface(DogPlayerInterface):
             'copas' : 'hearts'
         }
         numeros = {
-            'A' : 'ace',
+            '1' : 'ace',
             '2' : '2',
             '3' : '3',
             '4' : '4',
@@ -273,9 +278,9 @@ class PlayerInterface(DogPlayerInterface):
             '8' : '8',
             '9' : '9',
             '10' : '10',
-            'J' : 'jack',
-            'Q' : 'queen',
-            'K' : 'king'
+            '11' : 'jack',
+            '12' : 'queen',
+            '13' : 'king'
         }
         cartas_locais = self.mesa.local_player.getCartas()
         #print(cartas_locais)
@@ -313,6 +318,29 @@ class PlayerInterface(DogPlayerInterface):
             self.board_view[5][2].configure(image=img)
             self.image.add(img)
         
+        #trincas
+        cartas = []
+        trincas_remotas = self.mesa.remote_player.getTrincas()
+        for trinca in trincas_remotas:
+            for carta in trinca.getCartas():
+                cartas.append(carta)
+        for i in range(len(cartas)):
+            location = self.pasta+"/images/"+f"{numeros[str(cartas[i].getNum())]}"+"_of_"+f"{naipes_eng[cartas[i].getNaipe()]}"+".png"
+            img = ImageTk.PhotoImage(Image.open(location).resize((117,117)))
+            self.board_view[i][0].configure(image=img)
+            self.image.add(img)
+
+        cartas = []
+        trincas_locais = self.mesa.local_player.getTrincas()
+        for trinca in trincas_locais:
+            for carta in trinca.getCartas():
+                cartas.append(carta)
+        for i in range(len(cartas)):
+            location = self.pasta+"/images/"+f"{numeros[str(cartas[i].getNum())]}"+"_of_"+f"{naipes_eng[cartas[i].getNaipe()]}"+".png"
+            img = ImageTk.PhotoImage(Image.open(location).resize((117,117)))
+            self.board_view[i][4].configure(image=img)
+            self.image.add(img)
+
         if self.mesa.getStatus() == 2:
             self.turn_label.configure(text='   SUA VEZ  ')
             self.turn_label.pack(side='left')
