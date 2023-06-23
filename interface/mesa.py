@@ -145,7 +145,7 @@ class Mesa:
     def descartar_carta(self, player:Jogador, card):
         player.remove_card(card.num, card.naipe)
         self.descarte.push_top(card)
-        self.swap_turn()
+        self.toggle_turn()
 
     def comprou_baralho(self, player: Jogador, comprou_baralho: bool):
         if comprou_baralho:

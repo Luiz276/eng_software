@@ -355,9 +355,10 @@ class PlayerInterface(DogPlayerInterface):
             self.board_view[i][4].configure(image=img)
             self.image.add(img)
 
-        if self.mesa.getStatus() == 2:
-            self.turn_label.configure(text='   SUA VEZ  ')
+        if self.game_state == 6:
+            self.turn_label.configure(text = 'VEZ OPONENTE')
             self.turn_label.pack(side='left')
-        elif self.mesa.getStatus() == 3:
-            self.turn_label.configure(text='VEZ OPONENTE')
+        else:
+            self.turn_label.configure(text='   SUA VEZ  ')
+            #self.turn_label.configure(text='VEZ OPONENTE')
             self.turn_label.pack(side='left')
