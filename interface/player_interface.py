@@ -119,6 +119,7 @@ class PlayerInterface(DogPlayerInterface):
                     self.nova_trinca = []
                     if self.mesa.getStatus() == 4:
                         self.end_game()
+                        return
                     else:
                         self.game_state = 3
                 #self.game_state = 4
@@ -131,7 +132,7 @@ class PlayerInterface(DogPlayerInterface):
         self.update_gui(self.mesa.getStatus())
         self.a_move['match_status'] = 'end'
         self.dog_server_interface.send_move(self.a_move)
-        messagebox.showinfo("FIM DE JOGO", "VOCÊ GANHOU")
+        messagebox.showinfo("FIM DE JOGO", "VOCÊ VENCEU")
         self.main_window.destroy()
         pass
 
@@ -246,11 +247,16 @@ class PlayerInterface(DogPlayerInterface):
     def receive_move(self, a_move):
         #return super().receive_move(a_move)
         print("receber")
+        if a_move['match_status'] == 'end':
+            messagebox.showinfo("FIM DE JOGO", "VOCÊ PERDEU")
+            self.main_window.destroy()
+            self.game_state = 7
+            self.mesa.match_status = 4
+            return
         self.mesa.receive_move(a_move)
         self.game_state = 2
         match_state = self.mesa.getStatus()
-        if match_state == 4:
-            self.end_game()
+        
         self.update_gui(match_state)
         self.a_move["trincas_baixadas"] = []
 
@@ -358,7 +364,7 @@ class PlayerInterface(DogPlayerInterface):
         if self.game_state == 6:
             self.turn_label.configure(text = 'VEZ OPONENTE')
             self.turn_label.pack(side='left')
-        else:
+        elif self.game_state != 1:
             self.turn_label.configure(text='   SUA VEZ  ')
             #self.turn_label.configure(text='VEZ OPONENTE')
             self.turn_label.pack(side='left')
