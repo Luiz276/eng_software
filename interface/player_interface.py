@@ -117,12 +117,24 @@ class PlayerInterface(DogPlayerInterface):
                         print("trinca valida")
                         self.a_move["trincas_baixadas"].append(jsons.dump(self.nova_trinca))
                     self.nova_trinca = []
-                    self.game_state = 3
+                    if self.mesa.getStatus() == 4:
+                        self.end_game()
+                    else:
+                        self.game_state = 3
                 #self.game_state = 4
         print(self.game_state)
         status = self.mesa.getStatus()
         self.update_gui(status)
-        
+    
+    def end_game(self):
+        self.game_state = 7
+        self.update_gui(self.mesa.getStatus())
+        self.a_move['match_status'] = 'end'
+        self.dog_server_interface.send_move(self.a_move)
+        messagebox.showinfo("FIM DE JOGO", "VOCÊ GANHOU")
+        self.main_window.destroy()
+        pass
+
     def start_match_and_send(self):
         if self.game_state == 1:
             print('start_match')
@@ -236,8 +248,10 @@ class PlayerInterface(DogPlayerInterface):
         print("receber")
         self.mesa.receive_move(a_move)
         self.game_state = 2
-        game_state = self.mesa.getStatus()
-        self.update_gui(game_state)
+        match_state = self.mesa.getStatus()
+        if match_state == 4:
+            self.end_game()
+        self.update_gui(match_state)
         self.a_move["trincas_baixadas"] = []
 
     def descartar(self):

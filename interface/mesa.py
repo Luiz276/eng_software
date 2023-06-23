@@ -87,7 +87,7 @@ class Mesa:
                 return False
             
     def checa_fim_jogo(self):
-        return len(self.remote_player.getTrincas()) == 3 or len(self.remote_player.getTrincas()) == 3
+        return len(self.remote_player.getTrincas()) == 3 or len(self.local_player.getTrincas()) == 3
 
     def receive_move(self,a_move):
         if self.baralho == None:
@@ -99,6 +99,8 @@ class Mesa:
             self.remote_player.setCartas(self.getMaoFromCartas(a_move['j1_mao']))
             print(self.local_player.cartas)
             print(self.remote_player.cartas)
+        elif a_move['match_status'] == 'end':
+            print('END GAME')
         else:
             print("receive else")
             if a_move["comprou_baralho"]:
@@ -116,8 +118,8 @@ class Mesa:
             if a_move["carta_descarte"] != None:
                 self.descartar_carta(self.remote_player, self.getCartaFromDict(a_move["carta_descarte"]))
 
-            if a_move['match_status'] == 'end':
-                print("END GAME")
+            # if a_move['match_status'] == 'end':
+            #     print("END GAME")
 
             self.toggle_turn()
         #self.swap_turn()
@@ -148,6 +150,10 @@ class Mesa:
     def comprou_baralho(self, player: Jogador, comprou_baralho: bool):
         if comprou_baralho:
             card = self.baralho.retirarCarta()
+            if len(self.baralho.getCartas()) == 0:
+                self.baralho.set_cards = self.descarte.cartas
+                self.descarte.cartas = []
+                self.baralho.embaralhar()
         else:
             card = self.descarte.retirarCarta()
         player.adicionaCarta(card)
