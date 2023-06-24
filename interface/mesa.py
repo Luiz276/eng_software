@@ -210,3 +210,6 @@ class Mesa:
             naipe = i['naipe']
             trinca.append(Carta(num, naipe))
         return trinca
+
+    def receive_withdrawal_notification(self):
+        self.match_status = 5   # Partida abandonada

@@ -217,7 +217,13 @@ class PlayerInterface(DogPlayerInterface):
             self.update_gui(status)
             print("PARTIDA INICIADA")
             print("self.game_state = ", self.game_state)
-        
+    
+    def receive_withdrawal_notification(self):
+        self.mesa.receive_withdrawal_notification()
+        self.game_state = 7
+        messagebox.showinfo(message="OPONENTE ABANDONOU A PARTIDA")
+        self.main_window.destroy()
+
     def receive_start(self, start_status):
         #if self.getStatus() == 1:
             print("receive_start")
@@ -249,9 +255,9 @@ class PlayerInterface(DogPlayerInterface):
         print("receber")
         if a_move['match_status'] == 'end':
             messagebox.showinfo("FIM DE JOGO", "VOCÊ PERDEU")
-            self.main_window.destroy()
             self.game_state = 7
             self.mesa.match_status = 4
+            self.main_window.destroy()
             return
         self.mesa.receive_move(a_move)
         self.game_state = 2
@@ -279,6 +285,8 @@ class PlayerInterface(DogPlayerInterface):
         return self.game_state
     
     def update_gui(self, game_state: int):
+        if game_state == 4:
+            return
         # Loop por trincas de cada jogador e pela mão do jogador local
         # Assim como por baralho e descarte
         naipes_eng = {
