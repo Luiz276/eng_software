@@ -89,13 +89,16 @@ class PlayerInterface(DogPlayerInterface):
         if line == 2 and self.getStatus() == 2:
             print("compra")
             if column == 5:
-                self.a_move["comprou_baralho"] = False
-                self.mesa.comprou_baralho(self.mesa.local_player, False)
+                valid = self.mesa.comprou_baralho(self.mesa.local_player, False)
+                if valid:
+                    self.a_move["comprou_baralho"] = False
+                    self.game_state = 3
             elif column ==3:
                 self.a_move["comprou_baralho"] = True
                 self.mesa.comprou_baralho(self.mesa.local_player, True)
                 print('baralho')
-            self.game_state = 3
+                self.game_state = 3
+            #self.game_state = 3
         elif line == 6:
             if self.getStatus() == 5:
                 print('descarte')
@@ -237,7 +240,7 @@ class PlayerInterface(DogPlayerInterface):
             players = start_status.get_players()
             print(players)
             local_player_id = start_status.get_local_id()
-            self.mesa.start_match(players, local_player_id)
+            self.mesa.receive_start_match(players, local_player_id)
             status = self.mesa.getStatus()
             if self.mesa.getStatus() == 2:
                 self.game_state = 2
@@ -249,6 +252,7 @@ class PlayerInterface(DogPlayerInterface):
                 self.turn_label.pack(side='left')
             self.update_gui(status)
             messagebox.showinfo(message=message)
+            print("self.game_state = ", self.game_state)
     
     def receive_move(self, a_move):
         #return super().receive_move(a_move)

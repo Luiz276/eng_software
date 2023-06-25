@@ -52,6 +52,21 @@ class Mesa:
             self.match_status = 3  #    waiting remote action
         print("HERE!")
     
+    def receive_start_match(self, players, local_player_id):
+        # self.baralho = Baralho()
+        # self.descarte = Descarte()
+        # self.local_player.reset()
+        # self.remote_player.reset()
+        self.remote_player.initialize(1, players[0][1], players[0][0])
+        self.local_player.initialize(2, players[1][1], players[1][0])
+        if players[0][2] == "1":
+            self.remote_player.toggle_turn()
+            self.match_status = 3  #    waiting remote action
+        else:
+            self.local_player.toggle_turn()
+            self.match_status = 2
+        print("HERE!")
+    
     def getStatus(self):
         return self.match_status
             
@@ -123,9 +138,14 @@ class Mesa:
                 self.baralho.set_cards = self.descarte.cartas
                 self.descarte.cartas = []
                 self.baralho.embaralhar()
+            player.adicionaCarta(card)
+            return True
         else:
-            card = self.descarte.retirarCarta()
-        player.adicionaCarta(card)
+            if len(self.descarte.cartas) > 0:
+                card = self.descarte.retirarCarta()
+                player.adicionaCarta(card)
+                return True
+            else: return False
         
 
     def toggle_turn(self):
