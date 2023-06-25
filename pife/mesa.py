@@ -105,7 +105,7 @@ class Mesa:
             # if a_move['match_status'] == 'end':
             #     print("END GAME")
 
-            self.toggle_turn()
+            self.swap_turn()
         #self.swap_turn()
 
     def baixar_trinca(self, player: Jogador, trinca:list()):
