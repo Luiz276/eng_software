@@ -24,8 +24,6 @@ class Mesa:
         else:
             return self.remote_player
         
-    #def only_one_selected(player: Jogador): bool
-        
     def get_card_amount(self):
         j_atual = self.get_turn_player()
         n = len(j_atual.cartas)
@@ -38,8 +36,6 @@ class Mesa:
             self.match_status = 3
         self.local_player.toggle_turn()
         self.remote_player.toggle_turn()
-        
-    #def get_game_state(self): int
     
     def start_match(self, players, local_player_id):
         # self.baralho = Baralho()
@@ -58,33 +54,6 @@ class Mesa:
     
     def getStatus(self):
         return self.match_status
-    
-    def validar_trinca(self, trinca):
-        if (trinca[0].naipe == trinca[1].naipe) and (trinca[0].naipe == trinca[2].naipe):
-            trincaNumero = []
-            for i in range(3):
-                if trinca[i].num == 'A':
-                    trincaNumero.append(1)
-                elif trinca[i].num == 'J':
-                    trincaNumero.append(11)
-                elif trinca[i].num == 'Q':
-                    trincaNumero.append(12)
-                elif trinca[i].num == 'K':
-                    trincaNumero.append(13)
-                else:
-                    trincaNumero.append(trinca[i].num)
-            trincaNumero.sort()
-            if ((trincaNumero[0]+1) == trincaNumero[1]) and ((trincaNumero[0]+2) == trincaNumero[2]):
-                print("valida")
-                return True
-            else:
-                return False
-        else:
-            if (trinca[0].num == trinca[1].num) and (trinca[0].num == trinca[2].num):
-                print("valida")
-                return True
-            else:
-                return False
             
     def checa_fim_jogo(self):
         return len(self.remote_player.getTrincas()) == 3 or len(self.local_player.getTrincas()) == 3
