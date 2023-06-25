@@ -264,7 +264,10 @@ class PlayerInterface(DogPlayerInterface):
             self.main_window.destroy()
             return
         self.mesa.receive_move(a_move)
-        self.game_state = 2
+        if self.mesa.getStatus() == 3:
+            self.game_state = 6
+        else:
+            self.game_state = 2
         match_state = self.mesa.getStatus()
         
         self.update_gui(match_state)

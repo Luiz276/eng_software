@@ -61,11 +61,11 @@ class Mesa:
         self.local_player.initialize(2, players[1][1], players[1][0])
         if players[0][2] == "1":
             self.remote_player.toggle_turn()
-            self.match_status = 3  #    waiting remote action
+            self.match_status = 2  #    waiting remote action
         else:
             self.local_player.toggle_turn()
-            self.match_status = 2
-        print("HERE!")
+            self.match_status = 3
+        print("HERE RECEIVE!")
     
     def getStatus(self):
         return self.match_status
@@ -81,8 +81,8 @@ class Mesa:
             self.baralho.set_cards(self.getBaralhoFromDict(a_move["baralho"]))
             self.local_player.setCartas(self.getMaoFromCartas(a_move["j2_mao"]))
             self.remote_player.setCartas(self.getMaoFromCartas(a_move['j1_mao']))
-            print(self.local_player.cartas)
-            print(self.remote_player.cartas)
+            #print(self.local_player.cartas)
+            #print(self.remote_player.cartas)
         elif a_move['match_status'] == 'end':
             print('END GAME')
         else:
@@ -93,11 +93,11 @@ class Mesa:
                 self.comprou_baralho(self.remote_player, False)
 
             trinca = []
-            print(a_move["trincas_baixadas"])
+            #print(a_move["trincas_baixadas"])
             for trinca in a_move["trincas_baixadas"]:
-                print(trinca)
+                #print(trinca)
                 self.baixar_trinca(self.remote_player, self.getTrincaFromDict(trinca))
-                print(self.remote_player.getTrincas())
+                #print(self.remote_player.getTrincas())
             
             if a_move["carta_descarte"] != None:
                 self.descartar_carta(self.remote_player, self.getCartaFromDict(a_move["carta_descarte"]))
@@ -114,7 +114,7 @@ class Mesa:
             for card in trinca:
                 player.remove_card(card.num, card.naipe)
             player.add_trinca(nova_trinca)
-            self.trincas.append(nova_trinca)
+            #self.trincas.append(nova_trinca)
             if self.checa_fim_jogo():
                 self.match_status = 4
             return True
@@ -181,10 +181,10 @@ class Mesa:
 
     def getBaralhoFromDict(self, dic):
         print("bar from dic")
-        print(dic)
+        #print(dic)
         bar = []
         for i in dic:
-            print(i)
+            #print(i)
             num = i['num']
             naipe = i['naipe']
             bar.append(Carta(num, naipe))
@@ -192,7 +192,7 @@ class Mesa:
     
     def getTrincaFromDict(self, dic):
         print("trinca from dict")
-        print(dic)
+        #print(dic)
         trinca = []
         for i in dic:
             num = i['num']
