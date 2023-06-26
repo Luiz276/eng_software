@@ -161,10 +161,10 @@ class Mesa:
         if naipe_igual:
             print("naipe igual")
             trinca.sort(key=lambda x: x.getNum(), reverse=False)
-            return int(trinca[0].getNum())+1 == int(trinca[1].getNum()) and int(trinca[0].getNum())+2 == int(trinca[2].getNum())
+            return int(trinca[0].getNum())+1 == int(trinca[1].getNum()) and int(trinca[0].getNum())+2 == int(trinca[2].getNum()) or (trinca[0].getNum()==1 and trinca[1].getNum()==12 and trinca[2].getNum()==13)
         else:
             print("naipe diferente")
-            return int(trinca[0].getNum()) == int(trinca[1].getNum()) and int(trinca[0].getNum()) == int(trinca[2].getNum())
+            return int(trinca[0].getNum()) == int(trinca[1].getNum()) and int(trinca[0].getNum()) == int(trinca[2].getNum())and int(trinca[1].getNum()) == int(trinca[2].getNum())
     
     def getCartaFromDict(self, dic):
         num = dic['num']
