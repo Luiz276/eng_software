@@ -135,7 +135,7 @@ class Mesa:
         if comprou_baralho:
             card = self.baralho.retirarCarta()
             if len(self.baralho.getCartas()) == 0:
-                self.baralho.set_cards = self.descarte.cartas
+                self.baralho.set_cards(self.descarte.cartas)
                 self.descarte.cartas = []
                 self.baralho.embaralhar()
             player.adicionaCarta(card)
