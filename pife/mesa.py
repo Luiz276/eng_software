@@ -83,8 +83,6 @@ class Mesa:
             self.remote_player.setCartas(self.getMaoFromCartas(a_move['j1_mao']))
             #print(self.local_player.cartas)
             #print(self.remote_player.cartas)
-        elif a_move['match_status'] == 'end':
-            print('END GAME')
         else:
             print("receive else")
             if a_move["comprou_baralho"]:
